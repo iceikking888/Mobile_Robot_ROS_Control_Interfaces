@@ -1,22 +1,46 @@
 #!/usr/bin/env python
+
+from __future__ import print_function
+
 import rospy
+
 from std_msgs.msg import String
 from pynput import keyboard
 from geometry_msgs.msg import Twist
     
 class KeyboardControl():
     def __init__(self):
-        self.twist_pub = rospy.Publisher('base_controller/cmd_vel', Twist, queue_size=1)
+        self.twist_pub = rospy.Publisher('base_controller/command', Twist, queue_size=1)
 
         rospy.init_node('keyboard_double3_publisher', anonymous=True)
+        
         rate = rospy.Rate(1) # 1hz
+
+        self.init_msg = """
+        
+        Freight Controller:
+
+        -------------------
+
+        Moving Around:
+
+                 W    
+            A    S    D
+
+        -------------------
+
+        Hold Correspondng Button to Keep the Robot Moving
+
+        Press ESC or Cntrl-C to finish the programm
+
+        """
 
     def key_map(self, key):
         
-        # Forward motion (Keyboard keys : W and up-arrow)  -- {navigate, {throttle:'1', turn : '0'}}
-        # Backward motion (Keyboard keys : s and down-arrow)  -- {navigate, {throttle:'-1', turn : '0'}}
-        # Turn right (Keyboard keys : D and right-arrow)  -- {navigate, {throttle:'0', turn : '0.5'}}
-        # Left right (Keyboard keys : D and left-arrow)  -- {navigate, {throttle:'0', turn : '-0.5'}}
+        # Forward motion    (Keyboard keys : W and up-arrow)  -- {navigate, {throttle:'1', turn : '0'}}
+        # Backward motion   (Keyboard keys : s and down-arrow)  -- {navigate, {throttle:'-1', turn : '0'}}
+        # Turn Right        (Keyboard keys : D and right-arrow)  -- {navigate, {throttle:'0', turn : '0.5'}}
+        # Turn Left         (Keyboard keys : A and left-arrow)  -- {navigate, {throttle:'0', turn : '-0.5'}}
         # 
         global msg
         msg = Twist()
@@ -39,11 +63,11 @@ class KeyboardControl():
             self.twist_pub.publish(msg)
         if key == 'd':
             msg.linear.x = 0.0
-            msg.angular.z = 1.0
+            msg.angular.z = -1.0
             self.twist_pub.publish(msg)
         if key == 'a':
             msg.linear.x = 0.0
-            msg.angular.z = -1.0
+            msg.angular.z = 1.0
             self.twist_pub.publish(msg) 
 
     def on_press(self, key):
@@ -72,7 +96,7 @@ class KeyboardControl():
 if __name__ == '__main__':
     current_key = ''
     computer_keyboard = KeyboardControl()
-    print('press ESC to finish the programm')
+    print(computer_keyboard.init_msg)
 
     # starts keyboard listener
     listener = keyboard.Listener(
